@@ -12,11 +12,13 @@ const app = express()
 app.use(express.json())
 app.use(cors());
 
-app.use('/', UserRoute , songRoute )
-app.use('/playlists',PlaylistRoute)
+app.use('/', UserRoute, songRoute)
+app.use('/playlists', PlaylistRoute)
 
 
 connectDB()
 
-app.listen(3000 , ()=> {console.log("server Started !!");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`server Started on port ${PORT} !!`);
 })

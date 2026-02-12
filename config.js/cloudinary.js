@@ -1,14 +1,14 @@
-// import { rejects } from "assert";
+
 import { v2 as cloudinary } from "cloudinary";
 import dotenv from 'dotenv'
-import fs from 'fs'
-// import { resolve } from "path";
+
+
 
 dotenv.config();
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_URL,
     api_key:process.env.Cloudinary_API_key,
-    // :process.env.CLOUDINARY_API_SECRET,
+    
     api_secret:process.env.CLOUDINARY_API_SECRET,
     secure:true
 })

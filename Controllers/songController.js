@@ -10,9 +10,9 @@ export const uploadSong = async(req,res)=>{
             return res.status(400).json({error:"please upload an MP3 file"})
         }
 
-        const {title,artist} = req.body;
+        const {title,artist,filepath} = req.body;
 
-        const alreadyexist = await SongModel.findOne({title,artist});
+        const alreadyexist = await SongModel.findOne({title,artist,filepath});
 
         if(alreadyexist){
             return res.status(400).json({message:"This song is already uploaded!",song:alreadyexist});
@@ -43,7 +43,20 @@ export const uploadSong = async(req,res)=>{
         res.status(404).send("song doesn`t added !!")
            
     }
+//     const authMiddleware = (req, res, next) => {
+//     const token = req.headers.authorization?.split(" ")[1];
+
+//     if (!token) {
+//         return res.status(401).json({ message: "Unauthorized" });
+//     }
+
+//     // verify JWT here
+//     next();
+// };
+
 }
+
+
 
 export const getAllsongs = async(req,res)=>{
     try {
