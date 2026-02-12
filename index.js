@@ -1,10 +1,11 @@
-import './pre-init.js'
 import express from 'express'
 import UserRoute from './Route/UserRoute.js'
 import connectDB from './config.js/db.js'
+import dotenv from 'dotenv'
 import songRoute from './Route/songRoute.js'
 import cors from 'cors'
 import PlaylistRoute from './Route/playlistRoute.js'
+dotenv.config()
 
 
 const app = express()

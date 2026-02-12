@@ -5,14 +5,8 @@ import dotenv from 'dotenv'
 
 
 dotenv.config();
-
-// Safety: Render often sets CLOUDINARY_URL incorrectly.
-if (process.env.CLOUDINARY_URL && !process.env.CLOUDINARY_URL.startsWith("cloudinary://")) {
-  delete process.env.CLOUDINARY_URL;
-}
-
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_URL,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.Cloudinary_API_key,
   api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true
