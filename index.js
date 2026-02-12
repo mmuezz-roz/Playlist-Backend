@@ -1,38 +1,42 @@
-import dotenv from 'dotenv'
-dotenv.config()
+import dotenv from 'dotenv';
+dotenv.config();
 
-// --- SAFETY CHECK FOR DEPLOYMENT (RENDER/VERCEL) ---
-// 1. Cloudinary Fix: Prevent crash if CLOUDINARY_URL is just a string (not its protocol)
+// --- CRITICAL DEPLOYMENT SAFETY CHECK ---
+// This MUST run before any other imports to prevent the Cloudinary SDK from crashing the app.
 if (process.env.CLOUDINARY_URL && !process.env.CLOUDINARY_URL.startsWith("cloudinary://")) {
-    console.log("🛠️  Cleaning malformed CLOUDINARY_URL for production...");
+    process.env.CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_URL;
     delete process.env.CLOUDINARY_URL;
+    console.log("🛠️  Bypassed malformed CLOUDINARY_URL");
 }
-
-// 2. Database Warning: Catch if pointing to localhost on Render
-if (process.env.NODE_ENV === "production" && process.env.musicPlayList_URL?.includes("127.0.0.1")) {
-    console.error("❌ ERROR: Production backend is pointing to Local MongoDB (127.0.0.1). Use MongoDB Atlas!");
-}
-// --------------------------------------------------
 
 import express from 'express'
-import UserRoute from './Route/UserRoute.js'
-import connectDB from './config.js/db.js'
-import songRoute from './Route/songRoute.js'
 import cors from 'cors'
+import UserRoute from './Route/UserRoute.js'
+import songRoute from './Route/songRoute.js'
 import PlaylistRoute from './Route/playlistRoute.js'
-
+import connectDB from './config.js/db.js'
 
 const app = express()
 app.use(express.json())
-app.use(cors());
+app.use(cors())
 
+// Routes
 app.use('/', UserRoute, songRoute)
 app.use('/playlists', PlaylistRoute)
 
+// Health Check (So Render knows the app is alive)
+app.get('/health', (req, res) => res.status(200).send('OK'))
 
-connectDB()
+const start = async () => {
+    try {
+        await connectDB()
+        const PORT = process.env.PORT || 3000
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`✅ Server running on port ${PORT}`);
+        })
+    } catch (error) {
+        console.error("❌ Fatal Error during startup:", error);
+    }
+}
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`server Started on port ${PORT} !!`);
-})
+start()
