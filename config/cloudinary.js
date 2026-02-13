@@ -5,10 +5,10 @@ dotenv.config();
 // Cloudinary SDK crashes if CLOUDINARY_URL is present but doesn't start with 'cloudinary://'
 if (process.env.CLOUDINARY_URL && !process.env.CLOUDINARY_URL.startsWith('cloudinary://')) {
   console.warn("Invalid CLOUDINARY_URL detected. Removing it to prevent Cloudinary SDK crash.");
-  lete process.env.CLOUDINARY_URL;
+  delete process.env.CLOUDINARY_URL;
 }
 
-const { v2: cloudinary } = await import("cloudinary");
+import { v2 as cloudinary } from 'cloudinary';
 
 console.log("Initializing Cloudinary with Cloud Name:", process.env.CLOUDINARY_CLOUD_NAME);
 
