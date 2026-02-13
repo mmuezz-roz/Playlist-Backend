@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 dotenv.config()
 
-// Prevent Cloudinary SDK crash on Render if CLOUDINARY_URL is invalid
+// Prevent Cloudinary SDK crash on Render/Vercel if CLOUDINARY_URL is invalid
 if (process.env.CLOUDINARY_URL && !process.env.CLOUDINARY_URL.startsWith('cloudinary://')) {
     delete process.env.CLOUDINARY_URL;
 }
@@ -13,47 +13,29 @@ import songRoute from './Route/songRoute.js'
 import cors from 'cors'
 import PlaylistRoute from './Route/playlistRoute.js'
 
-
 const app = express()
 
-// Manual CORS middleware for Vercel
-app.use((req, res, next) => {
-    const allowedOrigins = [
-        "http://localhost:5173",
-        "https://melodyhub-frontend.vercel.app",
-        "https://melodyhub-frontend.vercel.app/"
-    ];
-    const origin = req.headers.origin;
-
-    if (origin && allowedOrigins.includes(origin)) {
-        res.setHeader("Access-Control-Allow-Origin", origin);
-    } else if (!origin) {
-        // Fallback for tools or non-browser requests if needed, 
-        // but browser preflights ALWAYS have an origin.
-        res.setHeader("Access-Control-Allow-Origin", "https://melodyhub-frontend.vercel.app");
-    }
-
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-
-    // Handle Preflight
-    if (req.method === "OPTIONS") {
-        return res.status(200).end();
-    }
-    next();
-});
+// 1. CORS Configuration (Must be at the top)
+app.use(cors({
+    origin: ["http://localhost:5173", "https://melodyhub-frontend.vercel.app"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    credentials: true
+}));
 
 app.use(express.json())
 
-// Health check route
-app.get('/health', (req, res) => res.json({ status: 'ok' }))
+// 2. Health check route (Top level for quick verification)
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', message: 'Backend is up and running' });
+});
 
+// 3. API Routes
 app.use('/', UserRoute)
 app.use('/', songRoute)
 app.use('/playlists', PlaylistRoute)
 
-// Global Error Handler
+// 4. Global Error Handler
 app.use((err, req, res, next) => {
     console.error("GLOBAL_ERROR:", err);
     res.status(err.status || 500).json({
@@ -62,9 +44,19 @@ app.use((err, req, res, next) => {
     });
 });
 
-connectDB()
+// 5. Catch-all for undefined routes
+app.use('*', (req, res) => {
+    res.status(404).json({ message: "Route not found" });
+});
+
+// 6. DB Connection
+connectDB().catch(err => {
+    console.error("Delayed DB Connection Error:", err);
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`server Started on port ${PORT} !!`);
 })
+
+export default app;
