@@ -5,7 +5,7 @@ import express from 'express'
 import cors from 'cors'
 import connectDB from './config/db.js'
 import UserRoute from './Route/UserRoute.js'
-// import songRoute from './Route/songRoute.js'
+import songRoute from './Route/songRoute.js'
 // import PlaylistRoute from './Route/playlistRoute.js'
 
 const app = express()
@@ -25,7 +25,7 @@ app.get('/health', (req, res) => {
 
 // 3. API Routes (Uncommenting one by one to debug)
 app.use('/', UserRoute)
-// app.use('/', songRoute)
+app.use('/', songRoute)
 // app.use('/playlists', PlaylistRoute)
 
 // 4. Fallback for undefined routes
