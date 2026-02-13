@@ -6,7 +6,7 @@ import cors from 'cors'
 import connectDB from './config/db.js'
 import UserRoute from './Route/UserRoute.js'
 import songRoute from './Route/songRoute.js'
-// import PlaylistRoute from './Route/playlistRoute.js'
+import PlaylistRoute from './Route/playlistRoute.js'
 
 const app = express()
 
@@ -23,10 +23,10 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', message: 'Backend is active (minimal)' });
 });
 
-// 3. API Routes (Uncommenting one by one to debug)
+// 3. API Routes (Fully restored)
 app.use('/', UserRoute)
 app.use('/', songRoute)
-// app.use('/playlists', PlaylistRoute)
+app.use('/playlists', PlaylistRoute)
 
 // 4. Fallback for undefined routes
 app.use('*', (req, res) => {
