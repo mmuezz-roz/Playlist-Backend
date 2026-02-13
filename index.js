@@ -4,9 +4,9 @@ dotenv.config()
 import express from 'express'
 import cors from 'cors'
 import connectDB from './config/db.js'
-import UserRoute from './Route/UserRoute.js'
-import songRoute from './Route/songRoute.js'
-import PlaylistRoute from './Route/playlistRoute.js'
+// import UserRoute from './Route/UserRoute.js'
+// import songRoute from './Route/songRoute.js'
+// import PlaylistRoute from './Route/playlistRoute.js'
 
 const app = express()
 
@@ -20,13 +20,13 @@ app.use(express.json())
 
 // 2. Health check (Very top)
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok', message: 'Backend is active' });
+    res.status(200).json({ status: 'ok', message: 'Backend is active (minimal)' });
 });
 
-// 3. API Routes
-app.use('/', UserRoute)
-app.use('/', songRoute)
-app.use('/playlists', PlaylistRoute)
+// 3. API Routes (Commented out for debugging)
+// app.use('/', UserRoute)
+// app.use('/', songRoute)
+// app.use('/playlists', PlaylistRoute)
 
 // 4. Fallback for undefined routes
 app.use('*', (req, res) => {
