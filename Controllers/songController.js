@@ -34,8 +34,12 @@ export const uploadSong = async (req, res) => {
         res.status(201).send({ message: "file uploaded successfully!!", song })
 
     } catch (error) {
-        console.log(error);
-        res.status(500).send("Internal server error during song upload")
+        console.error("SONG_UPLOAD_ERROR_DETAILS:", error);
+        if (error.response) console.error("Cloudinary Response Error:", error.response);
+        res.status(500).send({
+            error: "Internal server error during song upload",
+            details: error.message
+        });
     }
 }
 

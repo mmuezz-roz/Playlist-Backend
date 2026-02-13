@@ -10,6 +10,8 @@ if (process.env.CLOUDINARY_URL && !process.env.CLOUDINARY_URL.startsWith('cloudi
 
 const { v2: cloudinary } = await import("cloudinary");
 
+console.log("Initializing Cloudinary with Cloud Name:", process.env.CLOUDINARY_CLOUD_NAME);
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.Cloudinary_API_key,
@@ -19,6 +21,7 @@ cloudinary.config({
 
 export const uploadToCloudinary = (fileBuffer) => {
   return new Promise((resolve, reject) => {
+    console.log("Starting Cloudinary upload stream...");
     const stream = cloudinary.uploader.upload_stream(
       {
         resource_type: "auto",
