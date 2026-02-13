@@ -1,12 +1,18 @@
-
-import { v2 as cloudinary } from "cloudinary";
 import dotenv from 'dotenv'
 
-
-
 dotenv.config();
+
+// Fix for Render environment variable issue: 
+// Cloudinary SDK crashes if CLOUDINARY_URL is present but doesn't start with 'cloudinary://'
+if (process.env.CLOUDINARY_URL && !process.env.CLOUDINARY_URL.startsWith('cloudinary://')) {
+  console.warn("Invalid CLOUDINARY_URL detected. Removing it to prevent Cloudinary SDK crash.");
+  delete process.env.CLOUDINARY_URL;
+}
+
+const { v2: cloudinary } = await import("cloudinary");
+
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_URL,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.Cloudinary_API_key,
   api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true
