@@ -18,7 +18,11 @@ const app = express()
 
 // Manual CORS middleware for Vercel
 app.use((req, res, next) => {
-    const allowedOrigins = ["http://localhost:5173", "https://melodyhub-frontend.vercel.app"];
+    const allowedOrigins = [
+        "http://localhost:5173",
+        "https://melodyhub-frontend.vercel.app",
+        "https://melodyhub-frontend.vercel.app/"
+    ];
     const origin = req.headers.origin;
 
     if (allowedOrigins.includes(origin)) {
