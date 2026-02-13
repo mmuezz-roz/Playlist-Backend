@@ -15,14 +15,26 @@ import PlaylistRoute from './Route/playlistRoute.js'
 
 
 const app = express()
-app.use(express.json())
+
+// CORS configuration - Move to top
 app.use(cors({
     origin: ["http://localhost:5173", "https://melodyhub-frontend.vercel.app"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+    optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
 }));
 
-app.use('/', UserRoute, songRoute)
+// Explicitly handle preflight requests
+app.options('*', cors());
+
+app.use(express.json())
+
+// Health check route
+app.get('/health', (req, res) => res.json({ status: 'ok' }))
+
+app.use('/', UserRoute)
+app.use('/', songRoute)
 app.use('/playlists', PlaylistRoute)
 
 // Global Error Handler
