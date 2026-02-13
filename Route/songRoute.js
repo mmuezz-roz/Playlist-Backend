@@ -5,12 +5,12 @@ import Verifytoken from '../middleware/varifyToken.js';
 
 const songRoute = express.Router()
 
-songRoute.use((req,res,next)=> {
+songRoute.use((req, res, next) => {
     console.log("SongRouter Level Middleware");
     next()
 })
 
-songRoute.post("/addSong", upload.single("file"),Verifytoken,uploadSong )
+songRoute.post("/addSong", upload.fields([{ name: 'file', maxCount: 1 }, { name: 'coverImage', maxCount: 1 }]), Verifytoken, uploadSong)
 songRoute.get("/getsongs", getAllsongs)
 songRoute.get("/getOneSong/:id", getAsong)
 

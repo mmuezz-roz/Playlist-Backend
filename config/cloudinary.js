@@ -41,5 +41,30 @@ export const uploadToCloudinary = (fileBuffer) => {
   });
 };
 
+export const uploadImageToCloudinary = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    console.log("Starting Cloudinary image upload stream...");
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: "image",
+        folder: "song_covers",
+        transformation: [
+          { width: 500, height: 500, crop: "limit" }, // Optimization
+          { quality: "auto" }
+        ]
+      },
+      (error, result) => {
+        if (error) {
+          console.log("Cloudinary image upload error:", error);
+          reject(error);
+        } else {
+          resolve(result.secure_url);
+        }
+      }
+    );
 
-export default cloudinary
+    stream.end(fileBuffer);
+  });
+};
+
+export default cloudinary;

@@ -1,41 +1,56 @@
 import { SongModel } from "../Models/song.js";
-import cloudinary, { uploadToCloudinary } from "../config/cloudinary.js";
+import cloudinary, { uploadToCloudinary, uploadImageToCloudinary } from "../config/cloudinary.js";
 
 
 export const uploadSong = async (req, res) => {
     try {
-        if (!req.file) {
-            return res.status(400).json({ error: "please upload an MP3 file" })
-        }
-
         const { title, artist } = req.body;
 
         if (!title || !artist) {
             return res.status(400).json({ error: "Title and artist are required" });
         }
 
+        // Check if audio file exists
+        if (!req.files || !req.files.file || req.files.file.length === 0) {
+            return res.status(400).json({ error: "Please upload an audio file" });
+        }
+
+        const audioFile = req.files.file[0];
+        const imageFile = req.files.coverImage ? req.files.coverImage[0] : null;
+
         const alreadyexist = await SongModel.findOne({ title, artist });
         if (alreadyexist) {
             return res.status(400).json({ message: "This song is already uploaded!" });
         }
 
-        const cloudinaryUrl = await uploadToCloudinary(req.file.buffer);
+        // Start uploads
+        console.log("Uploading audio...");
+        const audioUploadPromise = uploadToCloudinary(audioFile.buffer);
 
-        if (!cloudinaryUrl) {
-            return res.status(500).json({ error: "cloudinary upload failed!!" })
+        let imageUploadPromise = Promise.resolve(null);
+        if (imageFile) {
+            console.log("Uploading cover image...");
+            imageUploadPromise = uploadImageToCloudinary(imageFile.buffer);
+        }
+
+        // Wait for both
+        const [audioUrl, imageUrl] = await Promise.all([audioUploadPromise, imageUploadPromise]);
+
+        if (!audioUrl) {
+            return res.status(500).json({ error: "Audio upload failed" });
         }
 
         const song = await SongModel.create({
             title,
             artist,
-            filepath: cloudinaryUrl,
+            filepath: audioUrl,
+            coverImage: imageUrl
         });
 
-        res.status(201).send({ message: "file uploaded successfully!!", song })
+        res.status(201).send({ message: "Song uploaded successfully!", song });
 
     } catch (error) {
         console.error("SONG_UPLOAD_ERROR_DETAILS:", error);
-        if (error.response) console.error("Cloudinary Response Error:", error.response);
         res.status(500).send({
             error: "Internal server error during song upload",
             details: error.message
