@@ -1,5 +1,5 @@
 import { SongModel } from "../Models/song.js";
-import cloudinary, { uploadToCloudinary } from "../config.js/cloudinary.js";
+import cloudinary, { uploadToCloudinary } from "../config/cloudinary.js";
 
 
 export const uploadSong = async (req, res) => {

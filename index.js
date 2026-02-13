@@ -8,7 +8,7 @@ if (process.env.CLOUDINARY_URL && !process.env.CLOUDINARY_URL.startsWith('cloudi
 
 import express from 'express'
 import UserRoute from './Route/UserRoute.js'
-import connectDB from './config.js/db.js'
+import connectDB from './config/db.js'
 import songRoute from './Route/songRoute.js'
 import cors from 'cors'
 import PlaylistRoute from './Route/playlistRoute.js'
