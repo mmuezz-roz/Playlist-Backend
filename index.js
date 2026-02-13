@@ -4,7 +4,7 @@ dotenv.config()
 import express from 'express'
 import cors from 'cors'
 import connectDB from './config/db.js'
-// import UserRoute from './Route/UserRoute.js'
+import UserRoute from './Route/UserRoute.js'
 // import songRoute from './Route/songRoute.js'
 // import PlaylistRoute from './Route/playlistRoute.js'
 
@@ -23,8 +23,8 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', message: 'Backend is active (minimal)' });
 });
 
-// 3. API Routes (Commented out for debugging)
-// app.use('/', UserRoute)
+// 3. API Routes (Uncommenting one by one to debug)
+app.use('/', UserRoute)
 // app.use('/', songRoute)
 // app.use('/playlists', PlaylistRoute)
 
