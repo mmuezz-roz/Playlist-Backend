@@ -25,8 +25,12 @@ app.use((req, res, next) => {
     ];
     const origin = req.headers.origin;
 
-    if (allowedOrigins.includes(origin)) {
+    if (origin && allowedOrigins.includes(origin)) {
         res.setHeader("Access-Control-Allow-Origin", origin);
+    } else if (!origin) {
+        // Fallback for tools or non-browser requests if needed, 
+        // but browser preflights ALWAYS have an origin.
+        res.setHeader("Access-Control-Allow-Origin", "https://melodyhub-frontend.vercel.app");
     }
 
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
