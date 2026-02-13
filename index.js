@@ -29,7 +29,7 @@ app.use('/', songRoute)
 app.use('/playlists', PlaylistRoute)
 
 // 4. Fallback for undefined routes
-app.use('*', (req, res) => {
+app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });
 });
 
