@@ -51,8 +51,9 @@ export const uploadSong = async (req, res) => {
     } catch (error) {
         console.error("CRITICAL ERROR DURING SONG UPLOAD:", error);
         res.status(500).json({
-            error: "Internal server error during song upload",
-            details: error.message,
+            message: "Internal server error during song upload",
+            error: error.message,
+            cloudinaryError: error.http_code ? `Cloudinary error: ${error.http_code}` : null,
             stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         })
     }
