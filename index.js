@@ -25,6 +25,14 @@ app.use(cors({
 app.use('/', UserRoute, songRoute)
 app.use('/playlists', PlaylistRoute)
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error("GLOBAL_ERROR:", err);
+    res.status(err.status || 500).json({
+        message: err.message || "Something went wrong on the server",
+        error: process.env.NODE_ENV === "production" ? {} : err
+    });
+});
 
 connectDB()
 
