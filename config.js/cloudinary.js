@@ -10,23 +10,10 @@ if (process.env.CLOUDINARY_URL && !process.env.CLOUDINARY_URL.startsWith('cloudi
 
 const { v2: cloudinary } = await import("cloudinary");
 
-// Get keys with fallback for different casings
-const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-const apiKey = process.env.Cloudinary_API_key || process.env.CLOUDINARY_API_KEY;
-const apiSecret = process.env.CLOUDINARY_API_SECRET;
-
-if (!cloudName || !apiKey || !apiSecret) {
-  console.error("CRITICAL: Missing Cloudinary credentials!", {
-    hasCloudName: !!cloudName,
-    hasApiKey: !!apiKey,
-    hasApiSecret: !!apiSecret
-  });
-}
-
 cloudinary.config({
-  cloud_name: cloudName,
-  api_key: apiKey,
-  api_secret: apiSecret,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.Cloudinary_API_key,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true
 })
 
