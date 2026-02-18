@@ -13,8 +13,19 @@ const app = express()
 // 1. CORS - Standard setup
 app.use(cors({
     origin: ["http://localhost:5173", "https://melodyhub-frontend.vercel.app"],
-    credentials: true
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
+// Handle preflight requests explicitly
+app.options('*', cors());
+
+// Debug logging
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
 
 app.use(express.json())
 
