@@ -20,29 +20,37 @@ app.use(express.json())
 
 // 2. Health check (Very top)
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok', message: 'Backend is active (minimal)' });
+    res.status(200).json({ status: 'ok', message: 'Backend is active' });
 });
 
-// 3. API Routes (Fully restored)
+// 3. DB connection middleware — ensures DB is connected on every serverless cold start
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        console.error("DB connection failed:", error.message);
+        res.status(500).json({ message: "Database connection failed", error: error.message });
+    }
+});
+
+// 4. API Routes
 app.use('/', UserRoute)
 app.use('/', songRoute)
 app.use('/playlists', PlaylistRoute)
 
-// 4. Fallback for undefined routes
+// 5. Fallback for undefined routes
 app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });
 });
 
-// 5. Global Error Handler
+// 6. Global Error Handler
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: "Internal Server Error", error: err.message });
 });
 
-// 6. DB Connection (Asynchronous)
-connectDB();
-
-// For local development
+// For local development only
 if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
