@@ -23,7 +23,14 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', message: 'Backend is active' });
 });
 
-// 3. DB connection middleware — ensures DB is connected on every serverless cold start
+// 3. Handle CORS preflight OPTIONS requests immediately (before DB middleware)
+// File uploads trigger a preflight — must respond before DB is touched
+app.options('*', cors({
+    origin: ["http://localhost:5173", "https://melodyhub-frontend.vercel.app"],
+    credentials: true
+}));
+
+// 4. DB connection middleware — ensures DB is connected on every serverless cold start
 app.use(async (req, res, next) => {
     try {
         await connectDB();
