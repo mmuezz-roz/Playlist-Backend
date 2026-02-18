@@ -2,7 +2,6 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 import express from 'express'
-import cors from 'cors'
 import connectDB from './config/db.js'
 import UserRoute from './Route/UserRoute.js'
 import songRoute from './Route/songRoute.js'
@@ -10,27 +9,37 @@ import PlaylistRoute from './Route/playlistRoute.js'
 
 const app = express()
 
-// 1. CORS - Standard setup
-app.use(cors({
-    origin: ["http://localhost:5173", "https://melodyhub-frontend.vercel.app"],
-    credentials: true
-}));
+const ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "https://melodyhub-frontend.vercel.app"
+];
+
+// ✅ CORS — manually set headers on EVERY response (most reliable on Vercel)
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (ALLOWED_ORIGINS.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+
+    // Immediately respond to preflight OPTIONS requests
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
+    next();
+});
 
 app.use(express.json())
 
-// 2. Health check (Very top)
+// Health check
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', message: 'Backend is active' });
 });
 
-// 3. Handle CORS preflight OPTIONS requests immediately (before DB middleware)
-// File uploads trigger a preflight — must respond before DB is touched
-app.options('*', cors({
-    origin: ["http://localhost:5173", "https://melodyhub-frontend.vercel.app"],
-    credentials: true
-}));
-
-// 4. DB connection middleware — ensures DB is connected on every serverless cold start
+// DB connection middleware — ensures DB is connected on every serverless cold start
 app.use(async (req, res, next) => {
     try {
         await connectDB();
@@ -41,17 +50,17 @@ app.use(async (req, res, next) => {
     }
 });
 
-// 4. API Routes
+// API Routes
 app.use('/', UserRoute)
 app.use('/', songRoute)
 app.use('/playlists', PlaylistRoute)
 
-// 5. Fallback for undefined routes
+// Fallback for undefined routes
 app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });
 });
 
-// 6. Global Error Handler
+// Global Error Handler
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: "Internal Server Error", error: err.message });
