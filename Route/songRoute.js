@@ -1,33 +1,41 @@
 import express from 'express'
-import { getAllsongs, getAsong, uploadSong } from '../Controllers/songController.js';
-import upload from '../middleware/multer.js'
+import { getAllsongs, getAsong, saveSong } from '../Controllers/songController.js';
 import Verifytoken from '../middleware/varifyToken.js';
+import { generateSignedUploadParams } from '../config/cloudinary.js';
 
 const songRoute = express.Router()
 
-// Multer error handler wrapper
-const multerUpload = upload.fields([
-    { name: 'file', maxCount: 1 },
-    { name: 'coverImage', maxCount: 1 }
-]);
+/**
+ * GET /sign-upload?type=audio|image
+ *
+ * Returns Cloudinary signed upload parameters.
+ * The frontend uses these to upload files DIRECTLY to Cloudinary,
+ * bypassing Vercel's 4.5MB body size limit entirely.
+ */
+songRoute.get("/sign-upload", Verifytoken, (req, res) => {
+    try {
+        const type = req.query.type === "image" ? "image" : "auto";
+        const folder = type === "image" ? "song_covers" : "songs";
 
-const handleMulterUpload = (req, res, next) => {
-    multerUpload(req, res, (err) => {
-        if (err) {
-            console.error('[SongRoute] Multer error:', err.message, err.code || '');
-            if (err.code === 'LIMIT_FILE_SIZE') {
-                return res.status(413).json({ error: 'File too large. Maximum size is 50MB.' });
-            }
-            if (err.code === 'LIMIT_FILE_COUNT') {
-                return res.status(400).json({ error: 'Too many files uploaded.' });
-            }
-            return res.status(400).json({ error: err.message || 'File upload error' });
-        }
-        next();
-    });
-};
+        console.log(`[sign-upload] Generating signature for type=${type}, folder=${folder}`);
+        const params = generateSignedUploadParams(folder, type);
 
-songRoute.post("/addSong", handleMulterUpload, Verifytoken, uploadSong)
+        res.status(200).json(params);
+    } catch (error) {
+        console.error("[sign-upload] Error:", error.message);
+        res.status(500).json({ error: "Failed to generate upload signature", details: error.message });
+    }
+});
+
+/**
+ * POST /addSong
+ *
+ * Saves song metadata to MongoDB AFTER frontend has uploaded files directly to Cloudinary.
+ * Body: { title, artist, audioUrl, coverImageUrl? }
+ * This is a small JSON-only request — no files, no multer, no body size issues.
+ */
+songRoute.post("/addSong", Verifytoken, saveSong)
+
 songRoute.get("/getsongs", getAllsongs)
 songRoute.get("/getOneSong/:id", getAsong)
 

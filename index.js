@@ -14,7 +14,7 @@ const ALLOWED_ORIGINS = [
     "https://melodyhub-frontend.vercel.app"
 ];
 
-// ✅ CORS — manually set headers on EVERY response (most reliable on Vercel)
+// CORS — manually set headers on every response (most reliable on Vercel)
 app.use((req, res, next) => {
     const origin = req.headers.origin;
     if (ALLOWED_ORIGINS.includes(origin)) {
@@ -24,7 +24,6 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
 
-    // Immediately respond to preflight OPTIONS requests
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
@@ -32,19 +31,11 @@ app.use((req, res, next) => {
     next();
 });
 
-// ⚠️  IMPORTANT for Vercel: Only apply express.json() to NON-multipart routes.
-// Applying express.json() globally before multer can cause multer to receive an
-// already-consumed body stream, resulting in empty req.files on Vercel serverless.
-app.use((req, res, next) => {
-    const contentType = req.headers['content-type'] || '';
-    // Skip JSON body parser for multipart/form-data requests (handled by multer)
-    if (contentType.includes('multipart/form-data')) {
-        return next();
-    }
-    express.json()(req, res, next);
-});
+// Body parsers — safe to use globally now (no multer routes)
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
-// Health check
+// Health check — no DB, just confirms the serverless function is alive
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', message: 'Backend is active' });
 });
@@ -77,7 +68,7 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: "Internal Server Error", error: err.message });
 });
 
-// For local development only
+// Local development only
 if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
