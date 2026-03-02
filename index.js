@@ -32,7 +32,17 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(express.json())
+// ⚠️  IMPORTANT for Vercel: Only apply express.json() to NON-multipart routes.
+// Applying express.json() globally before multer can cause multer to receive an
+// already-consumed body stream, resulting in empty req.files on Vercel serverless.
+app.use((req, res, next) => {
+    const contentType = req.headers['content-type'] || '';
+    // Skip JSON body parser for multipart/form-data requests (handled by multer)
+    if (contentType.includes('multipart/form-data')) {
+        return next();
+    }
+    express.json()(req, res, next);
+});
 
 // Health check
 app.get('/health', (req, res) => {
@@ -62,6 +72,7 @@ app.use((req, res) => {
 
 // Global Error Handler
 app.use((err, req, res, next) => {
+    console.error("[GlobalErrorHandler]", err.message);
     console.error(err.stack);
     res.status(500).json({ message: "Internal Server Error", error: err.message });
 });
